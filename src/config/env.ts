@@ -13,7 +13,9 @@ const envSchema = z.object({
   API_PREFIX: z.string().default('/api/v1'),
 
   // Database
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  DATABASE_URL: z
+    .string()
+    .default('mysql://orderflow_user:orderflow_password@localhost:3306/orderflow_dev'),
 
   // Redis
   REDIS_URL: z.string().optional(),

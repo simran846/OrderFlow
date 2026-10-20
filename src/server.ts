@@ -11,6 +11,12 @@ const startServer = () => {
     logger.info(`🚀 OrderFlow API server running in [${env.NODE_ENV}] mode on port ${env.PORT}`);
     logger.info(`📍 Health Check: http://0.0.0.0:${env.PORT}${env.API_PREFIX}/health`);
 
+    if (env.NODE_ENV === 'production' && env.DATABASE_URL.includes('localhost')) {
+      logger.warn(
+        '⚠️ [Production Notice] DATABASE_URL is pointing to localhost. Please set your remote MySQL database URL in your cloud provider environment variables.'
+      );
+    }
+
     // Start background queue workers (BullMQ)
     startQueueWorkers();
   });
