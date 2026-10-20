@@ -8,10 +8,12 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm ci && npx prisma generate && npm run build
-    startCommand: npm run start
+    buildCommand: npm ci --include=dev && npx prisma generate && npm run build
+    startCommand: npx prisma db push && npm run start
     healthCheckPath: /api/v1/health
     envVars:
+      - key: NODE_VERSION
+        value: 22
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -31,9 +33,9 @@ services:
       - key: JWT_REFRESH_SECRET
         generateValue: true
       - key: DATABASE_URL
-        sync: false # Connect your hosted MySQL URL (e.g. from Aiven.io, TiDB Cloud, etc.)
+        sync: false # Provide your hosted MySQL URL (e.g. from Aiven.io, TiDB Cloud, or Railway)
       - key: REDIS_URL
-        sync: false # Connect your existing Render Redis or free Upstash Redis URL (optional)
+        sync: false # Optional: Provide your existing Render Redis or free Upstash Redis URL
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET

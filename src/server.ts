@@ -1,4 +1,5 @@
 import { createApp } from './app';
+import { disconnectDatabase } from './config/database';
 import { env } from './config/env';
 import { startQueueWorkers, stopQueueWorkers } from './queue';
 import { logger } from './utils/logger';
@@ -6,9 +7,9 @@ import { logger } from './utils/logger';
 const startServer = () => {
   const app = createApp();
 
-  const server = app.listen(env.PORT, () => {
+  const server = app.listen(env.PORT, '0.0.0.0', () => {
     logger.info(`🚀 OrderFlow API server running in [${env.NODE_ENV}] mode on port ${env.PORT}`);
-    logger.info(`📍 Health Check: http://localhost:${env.PORT}${env.API_PREFIX}/health`);
+    logger.info(`📍 Health Check: http://0.0.0.0:${env.PORT}${env.API_PREFIX}/health`);
 
     // Start background queue workers (BullMQ)
     startQueueWorkers();
@@ -24,6 +25,7 @@ const startServer = () => {
 
       // Safely close background queue workers and database connections
       await stopQueueWorkers();
+      await disconnectDatabase();
       process.exit(0);
     });
 

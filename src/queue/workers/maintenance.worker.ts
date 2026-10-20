@@ -25,5 +25,9 @@ export const createMaintenanceWorker = (): Worker => {
     logger.error({ jobId: job?.id, err: err.message }, 'Maintenance job encountered failure');
   });
 
+  worker.on('error', (err) => {
+    logger.warn({ err: err.message }, '⚠️ [Maintenance Worker] Redis connection issue (will retry)');
+  });
+
   return worker;
 };

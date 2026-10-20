@@ -43,5 +43,9 @@ export const createNotificationWorker = (): Worker<OrderConfirmationJobData> => 
     );
   });
 
+  worker.on('error', (err) => {
+    logger.warn({ err: err.message }, '⚠️ [Notification Worker] Redis connection issue (will retry)');
+  });
+
   return worker;
 };

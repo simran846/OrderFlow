@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import { prisma } from '../../config/database';
+import { env } from '../../config/env';
 
 export class HealthController {
   public static getHealth(_req: Request, res: Response): void {
@@ -9,20 +11,34 @@ export class HealthController {
         uptime: process.uptime(),
         timestamp: new Date().toISOString(),
         service: 'OrderFlow Backend API',
-        environment: process.env.NODE_ENV || 'development',
+        environment: env.NODE_ENV,
         memoryUsage: process.memoryUsage(),
       },
     });
   }
 
-  public static getReadiness(_req: Request, res: Response): void {
-    // In Phase 2+, we will verify active DB and Redis ping here
-    res.status(200).json({
-      success: true,
-      data: {
-        status: 'READY',
-        timestamp: new Date().toISOString(),
-      },
-    });
+  public static async getReadiness(_req: Request, res: Response): Promise<void> {
+    try {
+      if (env.NODE_ENV !== 'test') {
+        // Query database to verify live connectivity
+        await prisma.$queryRaw`SELECT 1`;
+      }
+      res.status(200).json({
+        success: true,
+        data: {
+          status: 'READY',
+          database: 'connected',
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (error: any) {
+      res.status(503).json({
+        success: false,
+        error: {
+          message: 'Database service unavailable',
+          statusCode: 503,
+        },
+      });
+    }
   }
 }

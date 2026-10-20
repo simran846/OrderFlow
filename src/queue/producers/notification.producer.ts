@@ -20,6 +20,9 @@ export class NotificationProducer {
         connection: redisConnectionOptions,
         defaultJobOptions,
       });
+      this.orderQueue.on('error', (err) => {
+        logger.warn({ err: err.message }, '⚠️ [Order Queue] Redis connection issue');
+      });
     }
     return this.orderQueue;
   }
@@ -29,6 +32,9 @@ export class NotificationProducer {
       this.maintenanceQueue = new Queue(QUEUE_NAMES.SYSTEM_MAINTENANCE, {
         connection: redisConnectionOptions,
         defaultJobOptions,
+      });
+      this.maintenanceQueue.on('error', (err) => {
+        logger.warn({ err: err.message }, '⚠️ [Maintenance Queue] Redis connection issue');
       });
     }
     return this.maintenanceQueue;

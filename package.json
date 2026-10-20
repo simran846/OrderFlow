@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Production-grade e-commerce backend built with TypeScript, Express, MySQL, Prisma, Redis, and BullMQ.",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "rimraf dist && tsc",
