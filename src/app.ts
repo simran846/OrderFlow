@@ -11,6 +11,7 @@ import { categoryRoutes } from './modules/categories/category.routes';
 import { productRoutes } from './modules/products/product.routes';
 import { cartRoutes } from './modules/cart/cart.routes';
 import { orderRoutes } from './modules/orders/order.routes';
+import { paymentRoutes } from './modules/payments/payment.routes';
 
 export const createApp = (): Application => {
   const app: Application = express();
@@ -26,8 +27,15 @@ export const createApp = (): Application => {
     })
   );
 
-  // 3. Body Parsing (JSON & URL-Encoded)
-  app.use(express.json({ limit: '10mb' }));
+  // 3. Body Parsing (JSON & URL-Encoded with rawBody Buffer retention for Webhook signature verification)
+  app.use(
+    express.json({
+      limit: '10mb',
+      verify: (req: any, _res, buf) => {
+        req.rawBody = buf;
+      },
+    })
+  );
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // 4. Request Logging & Correlation ID
@@ -40,6 +48,7 @@ export const createApp = (): Application => {
   app.use(`${env.API_PREFIX}/products`, productRoutes);
   app.use(`${env.API_PREFIX}/cart`, cartRoutes);
   app.use(`${env.API_PREFIX}/orders`, orderRoutes);
+  app.use(`${env.API_PREFIX}/payments`, paymentRoutes);
 
   // Root welcome route
   app.get('/', (_req: Request, res: Response) => {
