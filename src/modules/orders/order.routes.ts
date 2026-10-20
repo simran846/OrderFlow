@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.middleware';
+import { idempotency } from '../../middlewares/idempotency.middleware';
 import { validateRequest } from '../../middlewares/validate.middleware';
 import { OrderController } from './order.controller';
 import {
@@ -14,8 +15,13 @@ const router = Router();
 // All order endpoints require authenticated user
 router.use(authenticate);
 
-// Checkout active shopping cart
-router.post('/checkout', validateRequest({ body: checkoutSchema }), OrderController.checkout);
+// Checkout active shopping cart with idempotency protection
+router.post(
+  '/checkout',
+  idempotency(),
+  validateRequest({ body: checkoutSchema }),
+  OrderController.checkout
+);
 
 // List order history (Customer views own; Admin views all)
 router.get('/', validateRequest({ query: queryOrderSchema }), OrderController.list);
