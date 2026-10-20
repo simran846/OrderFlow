@@ -6,12 +6,30 @@ export const QUEUE_NAMES = {
   SYSTEM_MAINTENANCE: 'system-maintenance',
 } as const;
 
-export const redisConnectionOptions: ConnectionOptions = {
-  host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
-  password: env.REDIS_PASSWORD || undefined,
-  maxRetriesPerRequest: null, // Required by BullMQ
+const parseRedisConnection = (): ConnectionOptions => {
+  if (env.REDIS_URL) {
+    try {
+      const u = new URL(env.REDIS_URL);
+      return {
+        host: u.hostname,
+        port: u.port ? parseInt(u.port, 10) : 6379,
+        password: u.password || undefined,
+        username: u.username && u.username !== 'default' ? u.username : undefined,
+        maxRetriesPerRequest: null,
+      };
+    } catch {
+      // Fallback to standard host/port
+    }
+  }
+  return {
+    host: env.REDIS_HOST,
+    port: env.REDIS_PORT,
+    password: env.REDIS_PASSWORD || undefined,
+    maxRetriesPerRequest: null,
+  };
 };
+
+export const redisConnectionOptions: ConnectionOptions = parseRedisConnection();
 
 export const defaultJobOptions: DefaultJobOptions = {
   attempts: 3,

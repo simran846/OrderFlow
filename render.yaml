@@ -1,0 +1,50 @@
+# ==============================================================================
+# Render Infrastructure-as-Code Blueprint for OrderFlow
+# ==============================================================================
+services:
+  # OrderFlow Express API Web Service
+  - type: web
+    name: orderflow-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: API_PREFIX
+        value: /api/v1
+      - key: JWT_ACCESS_EXPIRATION
+        value: 15m
+      - key: JWT_REFRESH_EXPIRATION
+        value: 7d
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: LOG_LEVEL
+        value: info
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false # Connect your hosted MySQL URL (e.g. from Aiven.io, Railway, or TiDB)
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: orderflow-redis
+          property: connectionString
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+  # Managed Redis Cache & BullMQ Broker
+  - type: redis
+    name: orderflow-redis
+    plan: free
+    region: oregon
+    ipAllowList: [] # Private internal network access

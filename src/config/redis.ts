@@ -4,22 +4,29 @@ import { logger } from '../utils/logger';
 
 let isRedisConnected = false;
 
+const retryStrategy = (times: number) => {
+  if (times > 5) {
+    logger.warn('⚠️ Redis reconnection attempts exceeded limit. Operating in cache-bypass mode.');
+    return null;
+  }
+  return Math.min(times * 200, 3000);
+};
+
 // Create Redis client instance with retry strategy
-export const redis = new Redis({
-  host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
-  password: env.REDIS_PASSWORD || undefined,
-  lazyConnect: true,
-  maxRetriesPerRequest: 1,
-  retryStrategy: (times) => {
-    // Reconnect with backoff up to 3 seconds
-    if (times > 5) {
-      logger.warn('⚠️ Redis reconnection attempts exceeded limit. Operating in cache-bypass mode.');
-      return null; // Stop reconnecting after 5 attempts
-    }
-    return Math.min(times * 200, 3000);
-  },
-});
+export const redis = env.REDIS_URL
+  ? new Redis(env.REDIS_URL, {
+      lazyConnect: true,
+      maxRetriesPerRequest: 1,
+      retryStrategy,
+    })
+  : new Redis({
+      host: env.REDIS_HOST,
+      port: env.REDIS_PORT,
+      password: env.REDIS_PASSWORD || undefined,
+      lazyConnect: true,
+      maxRetriesPerRequest: 1,
+      retryStrategy,
+    });
 
 redis.on('connect', () => {
   isRedisConnected = true;
