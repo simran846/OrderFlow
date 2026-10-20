@@ -20,32 +20,36 @@ OrderFlow is a production-grade, modular monolith e-commerce backend built with 
 
 ```mermaid
 graph TD
-    Client[Web & Mobile Clients / Stripe Webhooks] -->|HTTPS / REST API| Gateway[Express Application Layer]
+    Client["Web and Mobile Clients / Stripe Webhooks"] -->|"HTTPS / REST API"| Gateway["Express Application Layer"]
 
-    subgraph "Cross-Cutting Middlewares"
-        Gateway --> MW_Sec[Helmet Security Headers]
-        Gateway --> MW_Corr[X-Request-Id Correlation Tracking]
-        Gateway --> MW_Rate[Brute-Force Rate Limiter]
-        Gateway --> MW_Auth[JWT & RBAC Authorization]
-        Gateway --> MW_Idemp[Idempotency & SHA-256 Fingerprint]
-        Gateway --> MW_Pino[Pino Structured JSON Logger]
+    subgraph Middlewares ["Cross-Cutting Middlewares"]
+        Gateway --> MW_Sec["Helmet Security Headers"]
+        Gateway --> MW_Corr["X-Request-Id Correlation Tracking"]
+        Gateway --> MW_Rate["Brute-Force Rate Limiter"]
+        Gateway --> MW_Auth["JWT & RBAC Authorization"]
+        Gateway --> MW_Idemp["Idempotency SHA-256 Fingerprint"]
+        Gateway --> MW_Pino["Pino Structured JSON Logger"]
     end
 
-    subgraph "Modular Monolith Domain Modules"
-        MW_Auth --> Mod_Auth[Auth Module]
-        MW_Auth --> Mod_Prod[Product Catalog Module]
-        MW_Auth --> Mod_Cart[Shopping Cart Module]
-        MW_Idemp --> Mod_Order[Order & Checkout Engine]
-        Gateway --> Mod_Pay[Payments & Stripe Webhook Module]
+    subgraph Modules ["Modular Monolith Domain Modules"]
+        MW_Auth --> Mod_Auth["Auth Module"]
+        MW_Auth --> Mod_Prod["Product Catalog Module"]
+        MW_Auth --> Mod_Cart["Shopping Cart Module"]
+        MW_Idemp --> Mod_Order["Order & Checkout Engine"]
+        Gateway --> Mod_Pay["Payments & Stripe Webhook Module"]
     end
 
-    subgraph "Storage & Infrastructure"
-        Mod_Prod <-->|Cache-Aside (Fail-Open)| Redis_Cache[(Redis 7 Cache)]
-        Mod_Prod & Mod_Cart & Mod_Order & Mod_Auth <-->|Prisma ORM & Connection Pool| MySQL_DB[(MySQL 8.0 Relational DB)]
-        Mod_Order & Mod_Pay -->|Produce Async Events| Redis_Queue[(BullMQ Redis Broker)]
-        Redis_Queue --> Worker_Notif[Notification Worker]
-        Redis_Queue --> Worker_Maint[Idempotency Cleanup Worker]
-        Mod_Pay <-->|REST API & Webhooks| Stripe_API[Stripe Payment Gateway]
+    subgraph Infrastructure ["Storage & Infrastructure"]
+        Mod_Prod <-->|"Cache-Aside Fail-Open"| Redis_Cache[("Redis 7 Cache")]
+        Mod_Prod <-->|"Prisma ORM"| MySQL_DB[("MySQL 8.0 Relational DB")]
+        Mod_Cart <-->|"Prisma ORM"| MySQL_DB
+        Mod_Order <-->|"Prisma ORM"| MySQL_DB
+        Mod_Auth <-->|"Prisma ORM"| MySQL_DB
+        Mod_Order -->|"Produce Async Events"| Redis_Queue[("BullMQ Redis Broker")]
+        Mod_Pay -->|"Produce Async Events"| Redis_Queue
+        Redis_Queue --> Worker_Notif["Notification Worker"]
+        Redis_Queue --> Worker_Maint["Idempotency Cleanup Worker"]
+        Mod_Pay <-->|"REST API and Webhooks"| Stripe_API["Stripe Payment Gateway"]
     end
 ```
 
@@ -118,7 +122,7 @@ erDiagram
         string passwordHash
         string firstName
         string lastName
-        enum role "CUSTOMER | ADMIN"
+        string role "CUSTOMER, ADMIN"
         datetime createdAt
     }
 
@@ -154,7 +158,7 @@ erDiagram
         string id PK
         string orderNumber UK
         string userId FK
-        enum status "PENDING | CONFIRMED | PROCESSING | SHIPPED | DELIVERED | CANCELLED | REFUNDED"
+        string status "PENDING, CONFIRMED, PROCESSING, etc."
         decimal totalAmount
         string shippingAddress
         string idempotencyKey
@@ -176,7 +180,7 @@ erDiagram
         string stripePaymentIntentId UK
         decimal amount
         string currency
-        enum status "PENDING | SUCCEEDED | FAILED | REFUNDED"
+        string status "PENDING, SUCCEEDED, FAILED"
     }
 
     IdempotencyRecord {
