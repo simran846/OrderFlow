@@ -7,6 +7,8 @@ import { errorHandler } from './middlewares/errorHandler';
 import { requestLogger } from './middlewares/requestLogger';
 import { healthRoutes } from './modules/health/health.routes';
 import { authRoutes } from './modules/auth/auth.routes';
+import { categoryRoutes } from './modules/categories/category.routes';
+import { productRoutes } from './modules/products/product.routes';
 
 export const createApp = (): Application => {
   const app: Application = express();
@@ -32,6 +34,8 @@ export const createApp = (): Application => {
   // 5. API Routes
   app.use(`${env.API_PREFIX}/health`, healthRoutes);
   app.use(`${env.API_PREFIX}/auth`, authRoutes);
+  app.use(`${env.API_PREFIX}/categories`, categoryRoutes);
+  app.use(`${env.API_PREFIX}/products`, productRoutes);
 
   // Root welcome route
   app.get('/', (_req: Request, res: Response) => {
