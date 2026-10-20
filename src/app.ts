@@ -12,12 +12,17 @@ import { productRoutes } from './modules/products/product.routes';
 import { cartRoutes } from './modules/cart/cart.routes';
 import { orderRoutes } from './modules/orders/order.routes';
 import { paymentRoutes } from './modules/payments/payment.routes';
+import { swaggerRoutes } from './docs/swagger.routes';
 
 export const createApp = (): Application => {
   const app: Application = express();
 
-  // 1. Security HTTP Headers
-  app.use(helmet());
+  // 1. Security HTTP Headers (Permits Swagger UI assets to render)
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+    })
+  );
 
   // 2. Cross-Origin Resource Sharing
   app.use(
@@ -49,6 +54,7 @@ export const createApp = (): Application => {
   app.use(`${env.API_PREFIX}/cart`, cartRoutes);
   app.use(`${env.API_PREFIX}/orders`, orderRoutes);
   app.use(`${env.API_PREFIX}/payments`, paymentRoutes);
+  app.use(`${env.API_PREFIX}/docs`, swaggerRoutes);
 
   // Root welcome route
   app.get('/', (_req: Request, res: Response) => {
