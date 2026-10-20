@@ -12,6 +12,7 @@
     "test": "jest --runInBand --detectOpenHandles",
     "test:unit": "jest tests/unit",
     "test:integration": "jest tests/integration --runInBand",
+    "test:load": "k6 run tests/k6/load-test.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
