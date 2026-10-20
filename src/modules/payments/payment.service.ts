@@ -4,6 +4,7 @@ import { prisma } from '../../config/database';
 import { env } from '../../config/env';
 import { stripe } from '../../config/stripe';
 import { BadRequestError, ForbiddenError, NotFoundError } from '../../errors/AppError';
+import { NotificationProducer } from '../../queue/producers/notification.producer';
 import { logger } from '../../utils/logger';
 import { OrderStateMachine } from '../orders/order.types';
 import { CreatePaymentIntentInput } from './payment.schema';
@@ -126,7 +127,7 @@ export class PaymentService {
           where: { providerPaymentIntentId: paymentIntentId },
           include: {
             order: {
-              include: { items: true },
+              include: { items: true, user: true },
             },
           },
         });
@@ -171,6 +172,14 @@ export class PaymentService {
               WHERE productId = ${item.productId}
             `;
           }
+        });
+
+        // Asynchronously enqueue background notification job
+        await NotificationProducer.sendOrderConfirmation({
+          orderId: payment.order.id,
+          orderNumber: payment.order.orderNumber,
+          userEmail: payment.order.user.email,
+          totalAmount: Number(payment.order.totalAmount),
         });
 
         logger.info({ orderId: payment.order.id, paymentIntentId }, '✅ Order successfully confirmed and stock permanently settled');

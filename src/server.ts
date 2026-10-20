@@ -1,5 +1,6 @@
 import { createApp } from './app';
 import { env } from './config/env';
+import { startQueueWorkers, stopQueueWorkers } from './queue';
 import { logger } from './utils/logger';
 
 const startServer = () => {
@@ -8,13 +9,21 @@ const startServer = () => {
   const server = app.listen(env.PORT, () => {
     logger.info(`🚀 OrderFlow API server running in [${env.NODE_ENV}] mode on port ${env.PORT}`);
     logger.info(`📍 Health Check: http://localhost:${env.PORT}${env.API_PREFIX}/health`);
+
+    // Start background queue workers (BullMQ)
+    startQueueWorkers();
   });
 
   // Graceful Shutdown handling
-  const shutdown = (signal: string) => {
+  const shutdown = async (signal: string) => {
     logger.info(`Received ${signal}. Shutting down gracefully...`);
-    server.close(() => {
+
+    // Stop accepting new HTTP requests
+    server.close(async () => {
       logger.info('HTTP server closed.');
+
+      // Safely close background queue workers and database connections
+      await stopQueueWorkers();
       process.exit(0);
     });
 
