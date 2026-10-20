@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderFlow — High-Concurrency E-Commerce Storefront</title>
+  <meta name="description" content="Production-grade e-commerce storefront powered by OrderFlow modular monolith backend. Features atomic inventory locks, idempotency engine, and server-side pricing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Ambient Glow Effects -->
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <!-- Glass Navbar -->
+  <header>
+    <div class="nav-container">
+      <a href="/" class="brand">
+        <div class="brand-icon">⚡</div>
+        <span class="brand-title">OrderFlow</span>
+      </a>
+
+      <div class="nav-links">
+        <div class="health-badge" id="health-pill">
+          <div class="health-dot"></div>
+          <span id="health-status-text">Backend: CONNECTING...</span>
+        </div>
+
+        <a href="#catalog" class="nav-link">Storefront</a>
+        <a href="/api/v1/docs" target="_blank" class="nav-link">Swagger API Docs ↗</a>
+        <a href="https://github.com/simran846/OrderFlow" target="_blank" class="nav-link">GitHub ↗</a>
+
+        <button class="cart-btn" onclick="toggleCart()">
+          <span>🛒 Cart</span>
+          <span class="cart-badge" id="cart-count">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-tag">
+      <span>🛡️ Zero-Overselling Concurrency Engine</span>
+    </div>
+    <h1 class="hero-title">High-Concurrency E-Commerce Storefront</h1>
+    <p class="hero-subtitle">
+      Powered by OrderFlow's TypeScript modular monolith backend. Experience real-time server pricing, atomic database inventory row-locks, and cryptographic idempotency protection.
+    </p>
+    <div class="hero-cta">
+      <a href="#catalog" class="btn-primary">Explore Live Catalog</a>
+      <a href="/api/v1/docs" target="_blank" class="btn-secondary">Test Backend APIs (Swagger UI) ↗</a>
+    </div>
+  </section>
+
+  <!-- System Capabilities Specs Bar -->
+  <section class="specs-bar">
+    <div class="spec-card">
+      <div class="spec-icon">🔒</div>
+      <div>
+        <div class="spec-title">Atomic Inventory Locks</div>
+        <div class="spec-desc">Conditional SQL updates guarantee zero overselling</div>
+      </div>
+    </div>
+    <div class="spec-card">
+      <div class="spec-icon">⚡</div>
+      <div>
+        <div class="spec-title">Redis Cache-Aside</div>
+        <div class="spec-desc">Sub-15ms catalog queries with fail-open fallback</div>
+      </div>
+    </div>
+    <div class="spec-card">
+      <div class="spec-icon">🔁</div>
+      <div>
+        <div class="spec-title">Idempotency Engine</div>
+        <div class="spec-desc">SHA-256 fingerprinting prevents double-billing</div>
+      </div>
+    </div>
+    <div class="spec-card">
+      <div class="spec-icon">📬</div>
+      <div>
+        <div class="spec-title">BullMQ Event Queues</div>
+        <div class="spec-desc">Asynchronous background workers & dead-letter queue</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product Catalog Section -->
+  <main class="catalog-section" id="catalog">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Featured Products</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+          Prices calculated server-side with Decimal(10,2) precision.
+        </p>
+      </div>
+      <div class="category-tabs">
+        <button class="tab-btn active" data-category="all">All</button>
+        <button class="tab-btn" data-category="laptops">Laptops</button>
+        <button class="tab-btn" data-category="audio">Audio</button>
+        <button class="tab-btn" data-category="wearables">Wearables</button>
+        <button class="tab-btn" data-category="gaming">Gaming</button>
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="product-grid" id="product-grid">
+      <!-- Injected via JavaScript -->
+    </div>
+  </main>
+
+  <!-- Slide-Over Shopping Cart Drawer -->
+  <div class="cart-drawer-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+  <aside class="cart-drawer" id="cart-drawer">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Shopping Cart</h3>
+      <button class="close-btn" onclick="toggleCart()">×</button>
+    </div>
+
+    <div class="drawer-body" id="cart-items">
+      <!-- Items Injected Dynamically -->
+    </div>
+
+    <div class="drawer-footer">
+      <div class="summary-row">
+        <span>Server Subtotal</span>
+        <span id="cart-subtotal">$0.00</span>
+      </div>
+      <div class="summary-row">
+        <span>Estimated Tax (8%)</span>
+        <span id="cart-tax">$0.00</span>
+      </div>
+      <div class="summary-row">
+        <span>Express Delivery</span>
+        <span style="color: var(--accent-emerald);">FREE</span>
+      </div>
+      <div class="summary-total">
+        <span>Total Amount</span>
+        <span id="cart-total" style="color: var(--accent-cyan);">$0.00</span>
+      </div>
+      <button class="checkout-btn" onclick="openCheckout()">
+        Proceed to Atomic Checkout →
+      </button>
+    </div>
+  </aside>
+
+  <!-- Checkout Modal with Idempotency Simulation -->
+  <div class="modal-overlay" id="checkout-modal">
+    <div class="modal-card">
+      <h3 class="modal-title">Complete Your Order</h3>
+      <p class="modal-desc">
+        Transactions are executed with an atomic SQL inventory decrement and an automatic <strong>Idempotency-Key</strong> to eliminate duplicate charges.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">Delivery Address</label>
+        <input type="text" id="shipping-address-input" class="form-input" placeholder="e.g. 742 Evergreen Terrace, Springfield, OR" value="456 Innovation Way, Seattle, WA 98101">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Auto-Generated Idempotency Key (SHA-256)</label>
+        <input type="text" id="idempotency-key-input" class="form-input" readonly style="font-family: monospace; font-size: 0.8rem; color: var(--accent-cyan);">
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.03); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-glass); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: 600; color: var(--text-secondary);">Total to Pay</span>
+        <span id="checkout-amount-display" style="font-size: 1.35rem; font-weight: 800; color: var(--accent-emerald);">$0.00</span>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn-secondary" style="flex: 1;" onclick="closeCheckout()">Cancel</button>
+        <button id="submit-order-btn" class="btn-primary" style="flex: 2;" onclick="submitOrder()">
+          Confirm & Place Order
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer>
+    <p>
+      <strong>OrderFlow</strong> — High-Performance Modular Monolith Backend & Storefront Engine.
+    </p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;">
+      Built with Node.js 22 LTS, TypeScript 5.7, Express, MySQL 8, Redis 7, BullMQ, and Stripe.
+    </p>
+    <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 1.5rem;">
+      <a href="/api/v1/docs" style="color: var(--accent-cyan); text-decoration: none;">Swagger API Docs</a>
+      <a href="/api/v1/health" style="color: var(--accent-cyan); text-decoration: none;">Health Status</a>
+      <a href="https://github.com/simran846/OrderFlow" style="color: var(--accent-cyan); text-decoration: none;">GitHub Repository</a>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

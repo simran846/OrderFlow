@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express, { Application, Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
+import path from 'path';
 import { env } from './config/env';
 import { NotFoundError } from './errors/AppError';
 import { errorHandler } from './middlewares/errorHandler';
@@ -46,7 +47,11 @@ export const createApp = (): Application => {
   // 4. Request Logging & Correlation ID
   app.use(requestLogger);
 
-  // 5. API Routes
+  // 5. Serve Storefront Static Assets
+  const publicDir = path.join(process.cwd(), 'public');
+  app.use(express.static(publicDir, { index: false }));
+
+  // 6. API Routes
   app.use(`${env.API_PREFIX}/health`, healthRoutes);
   app.use(`${env.API_PREFIX}/auth`, authRoutes);
   app.use(`${env.API_PREFIX}/categories`, categoryRoutes);
@@ -56,8 +61,18 @@ export const createApp = (): Application => {
   app.use(`${env.API_PREFIX}/payments`, paymentRoutes);
   app.use(`${env.API_PREFIX}/docs`, swaggerRoutes);
 
-  // Root welcome route
-  app.get('/', (_req: Request, res: Response) => {
+  // Dedicated storefront route
+  app.get('/store', (_req: Request, res: Response) => {
+    res.sendFile(path.join(publicDir, 'index.html'));
+  });
+
+  // Root route: Serves storefront website for browser navigations, JSON metadata for API clients
+  app.get('/', (req: Request, res: Response) => {
+    if (req.headers.accept?.includes('text/html')) {
+      res.sendFile(path.join(publicDir, 'index.html'));
+      return;
+    }
+
     res.status(200).json({
       name: 'OrderFlow API',
       version: '1.0.0',
