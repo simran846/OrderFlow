@@ -7,8 +7,18 @@ import { loginSchema, registerSchema } from './auth.schema';
 
 const router = Router();
 
-router.post('/register', authRateLimiter, validateRequest({ body: registerSchema }), AuthController.register);
-router.post('/login', authRateLimiter, validateRequest({ body: loginSchema }), AuthController.login);
+router.post(
+  '/register',
+  authRateLimiter,
+  validateRequest({ body: registerSchema }),
+  AuthController.register
+);
+router.post(
+  '/login',
+  authRateLimiter,
+  validateRequest({ body: loginSchema }),
+  AuthController.login
+);
 router.get('/me', authenticate, AuthController.me);
 
 export const authRoutes = router;

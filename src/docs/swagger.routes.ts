@@ -11,9 +11,13 @@ router.get('/json', (_req: Request, res: Response) => {
 });
 
 // Interactive Swagger UI
-router.use('/', swaggerUi.serve, swaggerUi.setup(openapiSpec, {
-  customSiteTitle: 'OrderFlow API Documentation',
-  customCss: '.swagger-ui .topbar { display: none }',
-}));
+router.use(
+  '/',
+  swaggerUi.serve,
+  swaggerUi.setup(openapiSpec, {
+    customSiteTitle: 'OrderFlow API Documentation',
+    customCss: '.swagger-ui .topbar { display: none }',
+  })
+);
 
 export const swaggerRoutes = router;

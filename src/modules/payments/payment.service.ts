@@ -42,14 +42,14 @@ export class PaymentService {
     }
 
     if (order.status !== OrderStatus.PENDING) {
-      throw new BadRequestError(`Cannot create payment intent for order in [${order.status}] status`);
+      throw new BadRequestError(
+        `Cannot create payment intent for order in [${order.status}] status`
+      );
     }
 
     // Stripe expects amount in smallest currency units (cents for USD)
     const totalAmount =
-      typeof order.totalAmount === 'number'
-        ? order.totalAmount
-        : order.totalAmount.toNumber();
+      typeof order.totalAmount === 'number' ? order.totalAmount : order.totalAmount.toNumber();
 
     const amountInCents = Math.round(totalAmount * 100);
 
@@ -106,7 +106,10 @@ export class PaymentService {
    * 4. Permanently deducts reserved stock (reservedStock -= quantity).
    * 5. If payment fails, releases reserved stock back into availableStock.
    */
-  public static async processWebhook(rawBody: Buffer | string, signature: string): Promise<{ received: boolean; processed: boolean }> {
+  public static async processWebhook(
+    rawBody: Buffer | string,
+    signature: string
+  ): Promise<{ received: boolean; processed: boolean }> {
     let event: Stripe.Event;
 
     try {
@@ -133,13 +136,19 @@ export class PaymentService {
         });
 
         if (!payment || !payment.order) {
-          logger.warn({ paymentIntentId }, 'Received payment_intent.succeeded for untracked payment record');
+          logger.warn(
+            { paymentIntentId },
+            'Received payment_intent.succeeded for untracked payment record'
+          );
           return { received: true, processed: false };
         }
 
         // IDEMPOTENCY GUARD: If already processed, exit safely
         if (payment.status === PaymentStatus.SUCCEEDED) {
-          logger.info({ paymentIntentId }, 'Payment already recorded as SUCCEEDED. Skipping duplicate webhook event.');
+          logger.info(
+            { paymentIntentId },
+            'Payment already recorded as SUCCEEDED. Skipping duplicate webhook event.'
+          );
           return { received: true, processed: false };
         }
 
@@ -182,7 +191,10 @@ export class PaymentService {
           totalAmount: Number(payment.order.totalAmount),
         });
 
-        logger.info({ orderId: payment.order.id, paymentIntentId }, '✅ Order successfully confirmed and stock permanently settled');
+        logger.info(
+          { orderId: payment.order.id, paymentIntentId },
+          '✅ Order successfully confirmed and stock permanently settled'
+        );
         return { received: true, processed: true };
       }
 
@@ -203,7 +215,10 @@ export class PaymentService {
           return { received: true, processed: false };
         }
 
-        if (payment.status === PaymentStatus.FAILED || payment.order.status === OrderStatus.CANCELLED) {
+        if (
+          payment.status === PaymentStatus.FAILED ||
+          payment.order.status === OrderStatus.CANCELLED
+        ) {
           return { received: true, processed: false };
         }
 
@@ -235,7 +250,10 @@ export class PaymentService {
           }
         });
 
-        logger.info({ orderId: payment.order.id }, 'Order cancelled and reserved stock released after payment failure');
+        logger.info(
+          { orderId: payment.order.id },
+          'Order cancelled and reserved stock released after payment failure'
+        );
         return { received: true, processed: true };
       }
 

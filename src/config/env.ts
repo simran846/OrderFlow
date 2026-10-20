@@ -6,7 +6,10 @@ dotenv.config();
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.string().transform((val) => parseInt(val, 10)).default('5000'),
+  PORT: z
+    .string()
+    .transform((val) => parseInt(val, 10))
+    .default('5000'),
   API_PREFIX: z.string().default('/api/v1'),
 
   // Database
@@ -14,7 +17,10 @@ const envSchema = z.object({
 
   // Redis
   REDIS_HOST: z.string().default('localhost'),
-  REDIS_PORT: z.string().transform((val) => parseInt(val, 10)).default('6379'),
+  REDIS_PORT: z
+    .string()
+    .transform((val) => parseInt(val, 10))
+    .default('6379'),
   REDIS_PASSWORD: z.string().optional(),
 
   // JWT

@@ -27,7 +27,11 @@ export const idempotency = () => {
         return;
       }
 
-      const requestHash = IdempotencyService.computeRequestHash(req.originalUrl, req.method, req.body);
+      const requestHash = IdempotencyService.computeRequestHash(
+        req.originalUrl,
+        req.method,
+        req.body
+      );
       const claim = await IdempotencyService.claimKey(key, userId, req.originalUrl, requestHash);
 
       // 2. Another concurrent request is currently in flight with this key
@@ -35,7 +39,8 @@ export const idempotency = () => {
         res.status(409).json({
           success: false,
           error: {
-            message: 'A request with this Idempotency-Key is currently in progress. Please retry in a few moments.',
+            message:
+              'A request with this Idempotency-Key is currently in progress. Please retry in a few moments.',
             statusCode: 409,
           },
         });
@@ -47,7 +52,8 @@ export const idempotency = () => {
         res.status(422).json({
           success: false,
           error: {
-            message: 'Idempotency key was previously used with a different request payload or endpoint.',
+            message:
+              'Idempotency key was previously used with a different request payload or endpoint.',
             statusCode: 422,
           },
         });

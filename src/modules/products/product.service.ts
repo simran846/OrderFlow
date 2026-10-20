@@ -181,10 +181,7 @@ export class ProductService {
         },
       }),
       ...(query.search && {
-        OR: [
-          { name: { contains: query.search } },
-          { description: { contains: query.search } },
-        ],
+        OR: [{ name: { contains: query.search } }, { description: { contains: query.search } }],
       }),
     };
 

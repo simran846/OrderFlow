@@ -64,33 +64,29 @@ export class CartService {
    * Recalculates all line item subtotals and cart total using authoritative database prices.
    * NEVER trust client-provided prices or calculations!
    */
-  public static formatCartResponse(
-    cart: {
+  public static formatCartResponse(cart: {
+    id: string;
+    userId: string;
+    items: {
       id: string;
-      userId: string;
-      items: {
-        id: string;
-        productId: string;
-        quantity: number;
-        product: {
-          name: string;
-          slug: string;
-          price: { toNumber(): number } | number;
-          isActive: boolean;
-          inventory: { availableStock: number } | null;
-        };
-      }[];
-    }
-  ): CartResponseDto {
+      productId: string;
+      quantity: number;
+      product: {
+        name: string;
+        slug: string;
+        price: { toNumber(): number } | number;
+        isActive: boolean;
+        inventory: { availableStock: number } | null;
+      };
+    }[];
+  }): CartResponseDto {
     let subtotal = 0;
     let totalItems = 0;
     let hasUnavailableItems = false;
 
     const formattedItems: CartItemDto[] = cart.items.map((item) => {
       const unitPrice =
-        typeof item.product.price === 'number'
-          ? item.product.price
-          : item.product.price.toNumber();
+        typeof item.product.price === 'number' ? item.product.price : item.product.price.toNumber();
 
       const itemSubtotal = Math.round(unitPrice * item.quantity * 100) / 100;
       const availableStock = item.product.inventory?.availableStock ?? 0;
@@ -132,7 +128,10 @@ export class CartService {
     return this.formatCartResponse(cart);
   }
 
-  public static async addItemToCart(userId: string, input: AddToCartInput): Promise<CartResponseDto> {
+  public static async addItemToCart(
+    userId: string,
+    input: AddToCartInput
+  ): Promise<CartResponseDto> {
     const product = await prisma.product.findUnique({
       where: { id: input.productId },
       include: { inventory: true },
@@ -208,7 +207,9 @@ export class CartService {
 
     const availableStock = product.inventory?.availableStock ?? 0;
     if (quantity > availableStock) {
-      throw new BadRequestError(`Cannot set quantity to ${quantity}. Only ${availableStock} units available in stock`);
+      throw new BadRequestError(
+        `Cannot set quantity to ${quantity}. Only ${availableStock} units available in stock`
+      );
     }
 
     await prisma.cartItem.update({
@@ -219,7 +220,10 @@ export class CartService {
     return this.getCart(userId);
   }
 
-  public static async removeItemFromCart(userId: string, productId: string): Promise<CartResponseDto> {
+  public static async removeItemFromCart(
+    userId: string,
+    productId: string
+  ): Promise<CartResponseDto> {
     const cart = await this.getOrCreateCart(userId);
     const existingItem = cart.items.find((item) => item.productId === productId);
 

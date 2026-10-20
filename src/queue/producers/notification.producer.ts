@@ -1,11 +1,7 @@
 import { Queue } from 'bullmq';
 import { env } from '../../config/env';
 import { logger } from '../../utils/logger';
-import {
-  defaultJobOptions,
-  QUEUE_NAMES,
-  redisConnectionOptions,
-} from '../queue.config';
+import { defaultJobOptions, QUEUE_NAMES, redisConnectionOptions } from '../queue.config';
 
 export interface OrderConfirmationJobData {
   orderId: string;
@@ -45,7 +41,10 @@ export class NotificationProducer {
    */
   public static async sendOrderConfirmation(data: OrderConfirmationJobData): Promise<void> {
     if (env.NODE_ENV === 'test') {
-      logger.info({ orderId: data.orderId }, '[Test Mode] Simulated order confirmation background job');
+      logger.info(
+        { orderId: data.orderId },
+        '[Test Mode] Simulated order confirmation background job'
+      );
       return;
     }
 
@@ -71,9 +70,13 @@ export class NotificationProducer {
 
     try {
       const queue = this.getMaintenanceQueue();
-      await queue.add('cleanup-expired-idempotency', {}, {
-        jobId: `cleanup-${new Date().toISOString().slice(0, 13)}`, // Run at most once per hour
-      });
+      await queue.add(
+        'cleanup-expired-idempotency',
+        {},
+        {
+          jobId: `cleanup-${new Date().toISOString().slice(0, 13)}`, // Run at most once per hour
+        }
+      );
       logger.info('Enqueued idempotency records cleanup job');
     } catch (error: any) {
       logger.warn({ err: error.message }, '⚠️ Failed to enqueue maintenance cleanup job');

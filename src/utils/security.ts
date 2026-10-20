@@ -22,7 +22,11 @@ export class SecurityUtils {
     return bcrypt.compare(password, hash);
   }
 
-  public static generateAccessToken(payload: { userId: string; role: Role; email: string }): string {
+  public static generateAccessToken(payload: {
+    userId: string;
+    role: Role;
+    email: string;
+  }): string {
     const options: SignOptions = {
       expiresIn: env.JWT_ACCESS_EXPIRATION as unknown as number, // String like '15m' supported by jsonwebtoken
     };

@@ -28,7 +28,10 @@ redis.on('connect', () => {
 
 redis.on('error', (err) => {
   isRedisConnected = false;
-  logger.warn({ err: err.message }, '⚠️ Redis connection error. Cache operations will safely fall back to DB.');
+  logger.warn(
+    { err: err.message },
+    '⚠️ Redis connection error. Cache operations will safely fall back to DB.'
+  );
 });
 
 redis.on('close', () => {
@@ -39,7 +42,10 @@ export const connectRedis = async (): Promise<void> => {
   try {
     await redis.connect();
   } catch (error) {
-    logger.warn({ err: error }, '⚠️ Initial Redis connection failed. Application will operate with DB fallback.');
+    logger.warn(
+      { err: error },
+      '⚠️ Initial Redis connection failed. Application will operate with DB fallback.'
+    );
   }
 };
 

@@ -30,7 +30,8 @@ export const openapiSpec = {
         type: 'apiKey',
         in: 'header',
         name: 'Idempotency-Key',
-        description: 'UUID or unique string (8-128 chars) to guarantee safe request retries without duplication',
+        description:
+          'UUID or unique string (8-128 chars) to guarantee safe request retries without duplication',
       },
     },
     schemas: {
@@ -73,9 +74,16 @@ export const openapiSpec = {
         properties: {
           name: { type: 'string', example: 'Wireless Noise-Canceling Headphones' },
           slug: { type: 'string', example: 'wireless-noise-canceling-headphones' },
-          description: { type: 'string', example: 'High-fidelity audio with active noise cancellation' },
+          description: {
+            type: 'string',
+            example: 'High-fidelity audio with active noise cancellation',
+          },
           price: { type: 'number', example: 199.99 },
-          categoryId: { type: 'string', format: 'uuid', example: '33333333-4444-5555-6666-777777777777' },
+          categoryId: {
+            type: 'string',
+            format: 'uuid',
+            example: '33333333-4444-5555-6666-777777777777',
+          },
           stock: { type: 'integer', example: 50 },
         },
       },
@@ -83,7 +91,11 @@ export const openapiSpec = {
         type: 'object',
         required: ['productId', 'quantity'],
         properties: {
-          productId: { type: 'string', format: 'uuid', example: '44444444-5555-6666-7777-888888888888' },
+          productId: {
+            type: 'string',
+            format: 'uuid',
+            example: '44444444-5555-6666-7777-888888888888',
+          },
           quantity: { type: 'integer', minimum: 1, example: 2 },
         },
       },
@@ -91,7 +103,10 @@ export const openapiSpec = {
         type: 'object',
         required: ['shippingAddress'],
         properties: {
-          shippingAddress: { type: 'string', example: '742 Evergreen Terrace, Springfield, OR 97477' },
+          shippingAddress: {
+            type: 'string',
+            example: '742 Evergreen Terrace, Springfield, OR 97477',
+          },
           idempotencyKey: { type: 'string', example: 'chk-8f92b71a-641e' },
         },
       },
@@ -99,7 +114,11 @@ export const openapiSpec = {
         type: 'object',
         required: ['orderId'],
         properties: {
-          orderId: { type: 'string', format: 'uuid', example: '55555555-6666-7777-8888-999999999999' },
+          orderId: {
+            type: 'string',
+            format: 'uuid',
+            example: '55555555-6666-7777-8888-999999999999',
+          },
         },
       },
     },
@@ -131,7 +150,9 @@ export const openapiSpec = {
         summary: 'Register new customer',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/RegisterRequest' } } },
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/RegisterRequest' } },
+          },
         },
         responses: {
           201: { description: 'Customer registered and cart created' },
@@ -146,7 +167,9 @@ export const openapiSpec = {
         summary: 'Authenticate user & receive JWT token',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } } },
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } },
+          },
         },
         responses: {
           200: { description: 'Authenticated successfully with accessToken' },
@@ -209,7 +232,11 @@ export const openapiSpec = {
           { name: 'minPrice', in: 'query', schema: { type: 'number' } },
           { name: 'maxPrice', in: 'query', schema: { type: 'number' } },
           { name: 'search', in: 'query', schema: { type: 'string' } },
-          { name: 'sortBy', in: 'query', schema: { type: 'string', enum: ['price', 'name', 'createdAt'] } },
+          {
+            name: 'sortBy',
+            in: 'query',
+            schema: { type: 'string', enum: ['price', 'name', 'createdAt'] },
+          },
           { name: 'sortOrder', in: 'query', schema: { type: 'string', enum: ['asc', 'desc'] } },
         ],
         responses: {
@@ -222,7 +249,9 @@ export const openapiSpec = {
         security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateProductRequest' } } },
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/CreateProductRequest' } },
+          },
         },
         responses: {
           201: { description: 'Product created and inventory allocated' },
@@ -234,7 +263,9 @@ export const openapiSpec = {
       get: {
         tags: ['Products'],
         summary: 'Get product by ID (Cached)',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
         responses: {
           200: { description: 'Product retrieved' },
           404: { description: 'Product not found' },
@@ -244,7 +275,9 @@ export const openapiSpec = {
         tags: ['Products'],
         summary: 'Soft-delete / deactivate product (Admin only)',
         security: [{ BearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
         responses: {
           200: { description: 'Product deactivated and caches purged' },
           403: { description: 'Admin access required' },
@@ -277,7 +310,9 @@ export const openapiSpec = {
         security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/AddToCartRequest' } } },
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/AddToCartRequest' } },
+          },
         },
         responses: {
           200: { description: 'Item added and subtotal updated' },
@@ -301,7 +336,9 @@ export const openapiSpec = {
         ],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/CheckoutRequest' } } },
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/CheckoutRequest' } },
+          },
         },
         responses: {
           201: { description: 'Order created, stock reserved, cart cleared' },
@@ -332,7 +369,11 @@ export const openapiSpec = {
         security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/CreatePaymentIntentRequest' } } },
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreatePaymentIntentRequest' },
+            },
+          },
         },
         responses: {
           200: { description: 'PaymentIntent created with clientSecret' },

@@ -38,9 +38,9 @@ export class OrderStateMachine {
   public static assertCanTransition(currentStatus: OrderStatus, targetStatus: OrderStatus): void {
     if (!this.canTransition(currentStatus, targetStatus)) {
       throw new BadRequestError(
-        `Invalid order status transition from [${currentStatus}] to [${targetStatus}]. Allowed transitions: [${ALLOWED_ORDER_TRANSITIONS[
-          currentStatus
-        ].join(', ') || 'None (Terminal state)'}]`
+        `Invalid order status transition from [${currentStatus}] to [${targetStatus}]. Allowed transitions: [${
+          ALLOWED_ORDER_TRANSITIONS[currentStatus].join(', ') || 'None (Terminal state)'
+        }]`
       );
     }
   }

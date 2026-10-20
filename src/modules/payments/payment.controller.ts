@@ -18,7 +18,11 @@ export class PaymentController {
     }
   }
 
-  public static async handleWebhook(req: Request, res: Response, next: NextFunction): Promise<void> {
+  public static async handleWebhook(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const signature = req.headers['stripe-signature'] as string;
       if (!signature) {

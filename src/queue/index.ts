@@ -13,7 +13,10 @@ export const startQueueWorkers = (): void => {
     maintenanceWorker = createMaintenanceWorker();
     logger.info(' BullMQ background workers initialized and listening');
   } catch (error: any) {
-    logger.warn({ err: error.message }, '⚠️ Failed to start BullMQ workers (Redis offline). App running in worker-bypass mode.');
+    logger.warn(
+      { err: error.message },
+      '⚠️ Failed to start BullMQ workers (Redis offline). App running in worker-bypass mode.'
+    );
   }
 };
 

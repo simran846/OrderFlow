@@ -7,7 +7,10 @@ export const createMaintenanceWorker = (): Worker => {
   const worker = new Worker(
     QUEUE_NAMES.SYSTEM_MAINTENANCE,
     async (job) => {
-      logger.info({ jobId: job.id }, '🧹 [Maintenance Worker] Running scheduled idempotency records cleanup...');
+      logger.info(
+        { jobId: job.id },
+        '🧹 [Maintenance Worker] Running scheduled idempotency records cleanup...'
+      );
       const cleanedCount = await IdempotencyService.cleanupExpiredRecords();
       logger.info({ cleanedCount }, '✅ [Maintenance Worker] Purged expired idempotency records');
       return { cleanedCount };

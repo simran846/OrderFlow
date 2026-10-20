@@ -38,10 +38,7 @@ export class IdempotencyService {
       body: normalize(body || {}),
     };
 
-    return crypto
-      .createHash('sha256')
-      .update(JSON.stringify(payloadToHash))
-      .digest('hex');
+    return crypto.createHash('sha256').update(JSON.stringify(payloadToHash)).digest('hex');
   }
 
   /**
@@ -110,7 +107,8 @@ export class IdempotencyService {
     responseBody: unknown
   ): Promise<void> {
     try {
-      const serialized = typeof responseBody === 'string' ? responseBody : JSON.stringify(responseBody);
+      const serialized =
+        typeof responseBody === 'string' ? responseBody : JSON.stringify(responseBody);
       await prisma.idempotencyRecord.update({
         where: { id: recordId },
         data: {

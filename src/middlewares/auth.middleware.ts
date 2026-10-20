@@ -7,7 +7,9 @@ export const authenticate = (req: Request, _res: Response, next: NextFunction): 
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new UnauthorizedError('Authentication token missing or invalid format (Bearer token required)');
+    throw new UnauthorizedError(
+      'Authentication token missing or invalid format (Bearer token required)'
+    );
   }
 
   const token = authHeader.split(' ')[1];
