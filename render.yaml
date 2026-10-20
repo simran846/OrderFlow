@@ -31,20 +31,10 @@ services:
       - key: JWT_REFRESH_SECRET
         generateValue: true
       - key: DATABASE_URL
-        sync: false # Connect your hosted MySQL URL (e.g. from Aiven.io, Railway, or TiDB)
+        sync: false # Connect your hosted MySQL URL (e.g. from Aiven.io, TiDB Cloud, etc.)
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: orderflow-redis
-          property: connectionString
+        sync: false # Connect your existing Render Redis or free Upstash Redis URL (optional)
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
-
-  # Managed Redis Cache & BullMQ Broker
-  - type: redis
-    name: orderflow-redis
-    plan: free
-    region: oregon
-    ipAllowList: [] # Private internal network access
