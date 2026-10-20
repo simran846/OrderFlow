@@ -19,7 +19,7 @@ OrderFlow is a production-grade, modular monolith e-commerce backend built with 
 ## 🏛️ System Architecture
 
 ```mermaid
-graph TD
+flowchart TD
     Client["Web and Mobile Clients / Stripe Webhooks"] -->|"HTTPS / REST API"| Gateway["Express Application Layer"]
 
     subgraph Middlewares ["Cross-Cutting Middlewares"]
@@ -40,16 +40,16 @@ graph TD
     end
 
     subgraph Infrastructure ["Storage & Infrastructure"]
-        Mod_Prod <-->|"Cache-Aside Fail-Open"| Redis_Cache[("Redis 7 Cache")]
-        Mod_Prod <-->|"Prisma ORM"| MySQL_DB[("MySQL 8.0 Relational DB")]
-        Mod_Cart <-->|"Prisma ORM"| MySQL_DB
-        Mod_Order <-->|"Prisma ORM"| MySQL_DB
-        Mod_Auth <-->|"Prisma ORM"| MySQL_DB
+        Mod_Prod -->|"Cache-Aside"| Redis_Cache[("Redis 7 Cache")]
+        Mod_Prod -->|"Prisma ORM"| MySQL_DB[("MySQL 8.0 Relational DB")]
+        Mod_Cart -->|"Prisma ORM"| MySQL_DB
+        Mod_Order -->|"Prisma ORM"| MySQL_DB
+        Mod_Auth -->|"Prisma ORM"| MySQL_DB
         Mod_Order -->|"Produce Async Events"| Redis_Queue[("BullMQ Redis Broker")]
         Mod_Pay -->|"Produce Async Events"| Redis_Queue
         Redis_Queue --> Worker_Notif["Notification Worker"]
         Redis_Queue --> Worker_Maint["Idempotency Cleanup Worker"]
-        Mod_Pay <-->|"REST API and Webhooks"| Stripe_API["Stripe Payment Gateway"]
+        Mod_Pay -->|"Stripe Webhooks"| Stripe_API["Stripe Payment Gateway"]
     end
 ```
 
@@ -122,7 +122,7 @@ erDiagram
         string passwordHash
         string firstName
         string lastName
-        string role "CUSTOMER, ADMIN"
+        string role
         datetime createdAt
     }
 
@@ -158,7 +158,7 @@ erDiagram
         string id PK
         string orderNumber UK
         string userId FK
-        string status "PENDING, CONFIRMED, PROCESSING, etc."
+        string status
         decimal totalAmount
         string shippingAddress
         string idempotencyKey
@@ -180,7 +180,7 @@ erDiagram
         string stripePaymentIntentId UK
         decimal amount
         string currency
-        string status "PENDING, SUCCEEDED, FAILED"
+        string status
     }
 
     IdempotencyRecord {
