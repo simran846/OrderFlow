@@ -10,6 +10,7 @@ import { authRoutes } from './modules/auth/auth.routes';
 import { categoryRoutes } from './modules/categories/category.routes';
 import { productRoutes } from './modules/products/product.routes';
 import { cartRoutes } from './modules/cart/cart.routes';
+import { orderRoutes } from './modules/orders/order.routes';
 
 export const createApp = (): Application => {
   const app: Application = express();
@@ -38,6 +39,7 @@ export const createApp = (): Application => {
   app.use(`${env.API_PREFIX}/categories`, categoryRoutes);
   app.use(`${env.API_PREFIX}/products`, productRoutes);
   app.use(`${env.API_PREFIX}/cart`, cartRoutes);
+  app.use(`${env.API_PREFIX}/orders`, orderRoutes);
 
   // Root welcome route
   app.get('/', (_req: Request, res: Response) => {
