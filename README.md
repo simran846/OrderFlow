@@ -413,18 +413,5 @@ npm run test:load
 
 ---
 
-## 💼 SDE Resume Bullet Points (STAR Method)
-
-For your resume, LinkedIn, or portfolio:
-
-* **Engineered a production-grade e-commerce backend in TypeScript & Node.js**, featuring atomic inventory reservations via conditional SQL updates, completely eliminating overselling race conditions under simulated high concurrency.
-* **Architected a distributed idempotency engine** utilizing deterministic SHA-256 payload hashing and MySQL composite constraints, intercepting in-flight duplicates with `409 Conflict` and replaying cached outcomes transparently.
-* **Implemented an asynchronous event-driven pipeline using Redis & BullMQ**, offloading order notifications and periodic idempotency cleanup jobs with exponential backoff retries and Dead-Letter Queue (DLQ) alerts.
-* **Integrated Stripe payment workflows and HMAC-SHA256 webhook verification**, capturing raw request body buffers to guarantee zero double-spends and transactional stock settlement.
-* **Designed a resilient Cache-Aside architecture with Redis**, delivering sub-15ms catalog query latency with graceful fail-open fallback to MySQL during Redis outages.
-* **Constructed a multi-version GitHub Actions CI pipeline** executing strict TypeScript compilation, 10 automated test suites (58 tests), and multi-stage Docker container builds against containerized MySQL and Redis instances.
-
----
-
 ## 📜 License
 This project is open-source and available under the [ISC License](LICENSE).
