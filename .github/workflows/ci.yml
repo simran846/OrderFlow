@@ -8,7 +8,7 @@ on:
 
 jobs:
   test-and-build:
-    name: Test & Build on Node.js ${{ matrix.node-version }}
+    name: Test & Build Monorepo on Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -59,17 +59,20 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: 📦 Install dependencies reproducibly
+      - name: 📦 Install monorepo dependencies reproducibly
         run: npm ci
 
       - name: 🔧 Generate Prisma Client
-        run: npx prisma generate
+        run: npx prisma generate --schema=apps/api/prisma/schema.prisma
+
+      - name: 🧹 Run ESLint Linter
+        run: npm run lint
 
       - name: 🔍 TypeScript Strict Type Checking
         run: npx tsc --noEmit
 
-      - name: 🧪 Run Automated Test Suite
+      - name: 🧪 Run Automated Backend Test Suite
         run: npm test
 
-      - name: 🏗️ Build Production Bundle
+      - name: 🏗️ Build All Workspaces (Shared, API, Web)
         run: npm run build

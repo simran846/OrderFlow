@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: orderflow_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: orderflow_dev
+      MYSQL_USER: orderflow_user
+      MYSQL_PASSWORD: orderflow_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - orderflow_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: orderflow_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orderflow_network
+
+  backend:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.backend
+    container_name: orderflow_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - API_PREFIX=/api/v1
+      - DATABASE_URL=mysql://orderflow_user:orderflow_password@mysql:3306/orderflow_dev
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_ACCESS_SECRET=docker_compose_super_secret_jwt_access_key_min_32_chars
+      - JWT_ACCESS_EXPIRATION=15m
+      - JWT_REFRESH_SECRET=docker_compose_super_secret_jwt_refresh_key_min_32_chars
+      - JWT_REFRESH_EXPIRATION=7d
+      - STRIPE_SECRET_KEY=sk_test_mock_stripe_key_for_compose_demo
+      - STRIPE_WEBHOOK_SECRET=whsec_mock_stripe_webhook_secret_compose
+      - CORS_ORIGIN=http://localhost:3000
+      - LOG_LEVEL=info
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - orderflow_network
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.frontend
+    container_name: orderflow_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+    depends_on:
+      - backend
+    networks:
+      - orderflow_network
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  orderflow_network:
+    driver: bridge

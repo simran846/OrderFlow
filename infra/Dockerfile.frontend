@@ -1,0 +1,52 @@
+# ==============================================================================
+# Multi-Stage Production Dockerfile for OrderFlow Frontend (Next.js)
+# ==============================================================================
+# Stage 1: Build & Compilation
+# ==============================================================================
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependency manifests
+COPY frontend/package*.json ./
+COPY frontend/tsconfig.json ./
+COPY frontend/next.config.mjs ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code and static assets
+COPY frontend/src ./src/
+COPY frontend/public ./public/
+
+# Compile Next.js production build
+RUN npm run build
+
+# ==============================================================================
+# Stage 2: Production Runtime
+# ==============================================================================
+FROM node:22-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+RUN apk add --no-cache curl
+
+COPY frontend/package*.json ./
+COPY frontend/next.config.mjs ./
+
+RUN npm ci --omit=dev && npm cache clean --force
+
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+
+USER node
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:3000 || exit 1
+
+CMD ["npm", "start"]

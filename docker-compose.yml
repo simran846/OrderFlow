@@ -42,7 +42,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: infra/docker/Dockerfile.api
     container_name: orderflow_api
     restart: unless-stopped
     ports:
@@ -67,6 +67,22 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - orderflow_network
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.web
+    container_name: orderflow_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+    depends_on:
+      - api
     networks:
       - orderflow_network
 
