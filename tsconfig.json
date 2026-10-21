@@ -1,22 +1,7 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "CommonJS",
-    "lib": ["ES2022", "DOM"],
-    "skipLibCheck": true,
-    "paths": {
-      "@/*": ["frontend/src/*"]
-    }
-  },
-  "include": [
-    "backend/src/**/*",
-    "backend/tests/**/*",
-    "frontend/src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/node_modules",
-    "**/dist",
-    "**/.next"
+  "files": [],
+  "references": [
+    { "path": "./backend" },
+    { "path": "./frontend" }
   ]
 }
