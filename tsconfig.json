@@ -1,7 +1,27 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./backend" },
-    { "path": "./frontend" }
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "lib": ["ES2022", "DOM"],
+    "jsx": "preserve",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./frontend/src/*", "./src/*"]
+    }
+  },
+  "include": [
+    "backend/src/**/*",
+    "backend/tests/**/*",
+    "frontend/src/**/*",
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "**/dist",
+    "**/.next"
   ]
 }

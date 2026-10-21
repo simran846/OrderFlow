@@ -54,8 +54,7 @@ export class ProductController {
 
   public static async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // @ts-expect-error Zod query parsing infers typed QueryProductInput
-      const result = await ProductService.listProducts(req.query);
+      const result = await ProductService.listProducts(req.query as any);
       res.status(200).json({
         success: true,
         data: result,

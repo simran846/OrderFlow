@@ -53,7 +53,11 @@ export default function CheckoutPage() {
       const order = await ApiClient.checkout({ shippingAddress });
       await refreshCart();
       showToast('Order confirmed successfully!', 'success');
-      router.push(`/orders/${order.id || order.orderNumber}`);
+      if (order) {
+        router.push(`/orders/${order.id || order.orderNumber}`);
+      } else {
+        router.push('/orders');
+      }
     } catch (err: any) {
       setErrorBanner(err.message || 'Checkout failed. Please try again.');
       showToast(err.message || 'Checkout failed', 'error');

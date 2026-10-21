@@ -24,7 +24,85 @@ export interface GuestCartItem {
   product: ProductSummary;
 }
 
-export const ApiClient = {
+export async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const url = `${API_BASE}${endpoint}`;
+  const token = typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null;
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...((options.headers as Record<string, string>) || {}),
+  };
+
+  if (token && !headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      if (response.status === 401 && token) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
+          window.dispatchEvent(new CustomEvent('auth:expired'));
+        }
+      }
+
+      const message =
+        data?.error?.message ||
+        data?.message ||
+        `Request failed with status ${response.status}`;
+      const error = new Error(message) as Error & { status: number; details?: any };
+      error.status = response.status;
+      error.details = data?.error?.details || null;
+      throw error;
+    }
+
+    return data;
+  } catch (err: any) {
+    if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      throw new Error('Network error: Unable to reach OrderFlow backend API.');
+    }
+    throw err;
+  }
+}
+
+export interface IApiClient {
+  getToken(): string | null;
+  setSession(token: string, user: UserSummary): void;
+  clearSession(): void;
+  isAuthenticated(): boolean;
+  getCurrentUser(): UserSummary | null;
+  request<T = any>(endpoint: string, options?: RequestInit): Promise<T>;
+  register(payload: { email: string; password: string; firstName: string; lastName: string }): Promise<{ accessToken: string; user: UserSummary } | undefined>;
+  login(payload: { email: string; password: string }): Promise<{ accessToken: string; user: UserSummary } | undefined>;
+  getMe(): Promise<UserSummary | null>;
+  logout(): void;
+  getProducts(params?: Record<string, any>): Promise<ApiResponse<ProductSummary[]>>;
+  getProductById(id: string): Promise<ApiResponse<ProductSummary>>;
+  getCategories(): Promise<ApiResponse<CategorySummary[]>>;
+  getGuestCart(): GuestCartItem[];
+  setGuestCart(items: GuestCartItem[]): void;
+  getCart(): Promise<CartSummary>;
+  addToCart(product: ProductSummary, quantity?: number): Promise<CartSummary>;
+  updateCartItem(productId: string, quantity: number): Promise<CartSummary>;
+  removeFromCart(productId: string): Promise<CartSummary>;
+  clearCart(): Promise<void>;
+  syncGuestCartToServer(): Promise<void>;
+  checkout(payload: { shippingAddress: ShippingAddress }): Promise<OrderSummary | undefined>;
+  getOrders(params?: Record<string, any>): Promise<ApiResponse<OrderSummary[]>>;
+  getOrderById(id: string): Promise<ApiResponse<OrderSummary>>;
+  cancelOrder(id: string, reason?: string): Promise<ApiResponse<OrderSummary>>;
+  createPaymentIntent(orderId: string): Promise<ApiResponse<any>>;
+}
+
+export const ApiClient: IApiClient = {
   // Session Storage
   getToken(): string | null {
     if (typeof window === 'undefined') return null;
@@ -58,57 +136,11 @@ export const ApiClient = {
   },
 
   // HTTP Request Helper
-  async request<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${API_BASE}${endpoint}`;
-    const token = this.getToken();
-
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...((options.headers as Record<string, string>) || {}),
-    };
-
-    if (token && !headers['Authorization']) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers,
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        if (response.status === 401 && token) {
-          this.clearSession();
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('auth:expired'));
-          }
-        }
-
-        const message =
-          data?.error?.message ||
-          data?.message ||
-          `Request failed with status ${response.status}`;
-        const error = new Error(message) as Error & { status: number; details?: any };
-        error.status = response.status;
-        error.details = data?.error?.details || null;
-        throw error;
-      }
-
-      return data;
-    } catch (err: any) {
-      if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        throw new Error('Network error: Unable to reach OrderFlow backend API.');
-      }
-      throw err;
-    }
-  },
+  request: apiRequest,
 
   // Auth Methods
   async register(payload: { email: string; password: string; firstName: string; lastName: string }) {
-    const res = await this.request<ApiResponse<{ accessToken: string; user: UserSummary }>>(
+    const res = await apiRequest<ApiResponse<{ accessToken: string; user: UserSummary }>>(
       '/auth/register',
       {
         method: 'POST',
@@ -128,7 +160,7 @@ export const ApiClient = {
   },
 
   async login(payload: { email: string; password: string }) {
-    const res = await this.request<ApiResponse<{ accessToken: string; user: UserSummary }>>(
+    const res = await apiRequest<ApiResponse<{ accessToken: string; user: UserSummary }>>(
       '/auth/login',
       {
         method: 'POST',
@@ -150,7 +182,7 @@ export const ApiClient = {
   async getMe(): Promise<UserSummary | null> {
     if (!this.isAuthenticated()) return null;
     try {
-      const res = await this.request<ApiResponse<UserSummary>>('/auth/me');
+      const res = await apiRequest<ApiResponse<UserSummary>>('/auth/me');
       if (res.data && typeof window !== 'undefined') {
         localStorage.setItem(USER_KEY, JSON.stringify(res.data));
       }
@@ -181,15 +213,15 @@ export const ApiClient = {
 
     const qs = query.toString();
     const endpoint = `/products${qs ? `?${qs}` : ''}`;
-    return this.request<ApiResponse<ProductSummary[]>>(endpoint);
+    return apiRequest<ApiResponse<ProductSummary[]>>(endpoint);
   },
 
   async getProductById(id: string) {
-    return this.request<ApiResponse<ProductSummary>>(`/products/${id}`);
+    return apiRequest<ApiResponse<ProductSummary>>(`/products/${id}`);
   },
 
   async getCategories() {
-    return this.request<ApiResponse<CategorySummary[]>>('/categories');
+    return apiRequest<ApiResponse<CategorySummary[]>>('/categories');
   },
 
   // Cart
@@ -212,7 +244,7 @@ export const ApiClient = {
   async getCart(): Promise<CartSummary> {
     if (this.isAuthenticated()) {
       try {
-        const res = await this.request<ApiResponse<CartSummary>>('/cart');
+        const res = await apiRequest<ApiResponse<CartSummary>>('/cart');
         return res.data;
       } catch (err) {
         console.warn('Failed to fetch server cart, falling back to guest cache:', err);
@@ -241,7 +273,7 @@ export const ApiClient = {
 
   async addToCart(product: ProductSummary, quantity = 1) {
     if (this.isAuthenticated()) {
-      const res = await this.request<ApiResponse<CartSummary>>('/cart/items', {
+      const res = await apiRequest<ApiResponse<CartSummary>>('/cart/items', {
         method: 'POST',
         body: JSON.stringify({ productId: product.id, quantity }),
       });
@@ -279,7 +311,7 @@ export const ApiClient = {
       if (quantity <= 0) {
         return this.removeFromCart(productId);
       }
-      const res = await this.request<ApiResponse<CartSummary>>(`/cart/items/${productId}`, {
+      const res = await apiRequest<ApiResponse<CartSummary>>(`/cart/items/${productId}`, {
         method: 'PUT',
         body: JSON.stringify({ quantity }),
       });
@@ -301,7 +333,7 @@ export const ApiClient = {
 
   async removeFromCart(productId: string) {
     if (this.isAuthenticated()) {
-      const res = await this.request<ApiResponse<CartSummary>>(`/cart/items/${productId}`, {
+      const res = await apiRequest<ApiResponse<CartSummary>>(`/cart/items/${productId}`, {
         method: 'DELETE',
       });
       if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('cart:updated'));
@@ -315,7 +347,7 @@ export const ApiClient = {
 
   async clearCart() {
     if (this.isAuthenticated()) {
-      await this.request('/cart', { method: 'DELETE' });
+      await apiRequest('/cart', { method: 'DELETE' });
     }
     if (typeof window !== 'undefined') {
       localStorage.removeItem(GUEST_CART_KEY);
@@ -329,7 +361,7 @@ export const ApiClient = {
 
     for (const item of guestItems) {
       try {
-        await this.request('/cart/items', {
+        await apiRequest('/cart/items', {
           method: 'POST',
           body: JSON.stringify({ productId: item.productId, quantity: item.quantity }),
         });
@@ -348,7 +380,7 @@ export const ApiClient = {
     const idempotencyKey =
       'idemp_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now();
 
-    const res = await this.request<ApiResponse<OrderSummary>>('/orders/checkout', {
+    const res = await apiRequest<ApiResponse<OrderSummary>>('/orders/checkout', {
       method: 'POST',
       headers: {
         'Idempotency-Key': idempotencyKey,
@@ -365,22 +397,22 @@ export const ApiClient = {
     if (params.page) query.append('page', String(params.page));
     if (params.limit) query.append('limit', String(params.limit));
     const qs = query.toString();
-    return this.request<ApiResponse<OrderSummary[]>>(`/orders${qs ? `?${qs}` : ''}`);
+    return apiRequest<ApiResponse<OrderSummary[]>>(`/orders${qs ? `?${qs}` : ''}`);
   },
 
   async getOrderById(id: string) {
-    return this.request<ApiResponse<OrderSummary>>(`/orders/${id}`);
+    return apiRequest<ApiResponse<OrderSummary>>(`/orders/${id}`);
   },
 
   async cancelOrder(id: string, reason = 'Customer requested cancellation') {
-    return this.request<ApiResponse<OrderSummary>>(`/orders/${id}/cancel`, {
+    return apiRequest<ApiResponse<OrderSummary>>(`/orders/${id}/cancel`, {
       method: 'POST',
       body: JSON.stringify({ reason }),
     });
   },
 
   async createPaymentIntent(orderId: string) {
-    return this.request<ApiResponse<any>>('/payments/create-intent', {
+    return apiRequest<ApiResponse<any>>('/payments/create-intent', {
       method: 'POST',
       body: JSON.stringify({ orderId }),
     });
