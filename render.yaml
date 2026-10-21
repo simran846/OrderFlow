@@ -37,6 +37,6 @@ services:
       - key: REDIS_URL
         sync: false # Optional: Provide your existing Render Redis or free Upstash Redis URL
       - key: STRIPE_SECRET_KEY
-        sync: false
+        value: sk_test_placeholder
       - key: STRIPE_WEBHOOK_SECRET
-        sync: false
+        value: whsec_placeholder

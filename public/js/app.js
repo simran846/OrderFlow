@@ -63,6 +63,7 @@ const PRODUCTS = [
 ];
 
 // App State
+let liveProducts = [...PRODUCTS];
 let cart = [];
 let currentCategory = 'all';
 
@@ -85,15 +86,43 @@ document.addEventListener('DOMContentLoaded', () => {
   renderProducts();
   setupCategoryTabs();
   checkBackendHealth();
+  loadLiveProducts();
   // Poll health every 15s
   setInterval(checkBackendHealth, 15000);
 });
 
+// Fetch Live Products from OrderFlow Backend API
+async function loadLiveProducts() {
+  try {
+    const res = await fetch('/api/v1/products?limit=20');
+    if (res.ok) {
+      const json = await res.json();
+      if (json?.data?.products && Array.isArray(json.data.products) && json.data.products.length > 0) {
+        liveProducts = json.data.products.map(p => ({
+          id: p.id,
+          name: p.name,
+          category: p.category?.name || 'General',
+          description: p.description,
+          price: parseFloat(p.price),
+          emoji: p.category?.name === 'Footwear' ? '👟' : p.category?.name === 'Accessories' ? '⌚' : '🎧',
+          stock: p.inventory?.availableStock ?? 10,
+          badge: (p.inventory?.availableStock ?? 10) <= 2 ? 'Low Stock' : 'In Stock'
+        }));
+        renderProducts();
+        setupCategoryTabs();
+      }
+    }
+  } catch {
+    // Graceful fallback to default catalog
+  }
+}
+
 // Render Products
 function renderProducts() {
+  const source = liveProducts.length > 0 ? liveProducts : PRODUCTS;
   const filtered = currentCategory === 'all' 
-    ? PRODUCTS 
-    : PRODUCTS.filter(p => p.category.toLowerCase() === currentCategory.toLowerCase());
+    ? source 
+    : source.filter(p => p.category.toLowerCase() === currentCategory.toLowerCase());
 
   productGrid.innerHTML = filtered.map(product => `
     <div class="product-card">

@@ -1,4 +1,5 @@
 import { Worker } from 'bullmq';
+import { env } from '../config/env';
 import { logger } from '../utils/logger';
 import { NotificationProducer } from './producers/notification.producer';
 import { createMaintenanceWorker } from './workers/maintenance.worker';
@@ -8,6 +9,13 @@ let notificationWorker: Worker | null = null;
 let maintenanceWorker: Worker | null = null;
 
 export const startQueueWorkers = (): void => {
+  if (env.NODE_ENV === 'production' && !env.REDIS_URL && env.REDIS_HOST === 'localhost') {
+    logger.info(
+      'ℹ️ Redis URL not configured in production. BullMQ operating in worker-bypass mode.'
+    );
+    return;
+  }
+
   try {
     notificationWorker = createNotificationWorker();
     maintenanceWorker = createMaintenanceWorker();

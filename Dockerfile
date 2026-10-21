@@ -17,9 +17,10 @@ RUN npm ci
 # Generate strongly-typed Prisma Client
 RUN npx prisma generate
 
-# Copy source code and TypeScript configuration
+# Copy source code, storefront static assets, and TypeScript configuration
 COPY tsconfig.json ./
 COPY src ./src/
+COPY public ./public/
 
 # Compile TypeScript to JavaScript in /app/dist
 RUN npm run build
@@ -49,8 +50,9 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
-# Copy compiled JavaScript distribution
+# Copy compiled JavaScript distribution and storefront static assets
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/public ./public
 
 # Create non-root security context
 USER node
@@ -58,9 +60,9 @@ USER node
 # Expose HTTP application port
 EXPOSE 5000
 
-# Container liveness health check
+# Container liveness health check dynamically using platform PORT
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD curl -f http://localhost:5000/api/v1/health || exit 1
+  CMD curl -f http://localhost:${PORT:-5000}/api/v1/health || exit 1
 
 # Start production server
 CMD ["node", "dist/server.js"]

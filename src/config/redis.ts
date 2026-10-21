@@ -18,6 +18,7 @@ export const redis = env.REDIS_URL
       lazyConnect: true,
       maxRetriesPerRequest: 1,
       retryStrategy,
+      tls: env.REDIS_URL.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined,
     })
   : new Redis({
       host: env.REDIS_HOST,
@@ -46,6 +47,10 @@ redis.on('close', () => {
 });
 
 export const connectRedis = async (): Promise<void> => {
+  if (env.NODE_ENV === 'production' && !env.REDIS_URL && env.REDIS_HOST === 'localhost') {
+    logger.info('ℹ️ Redis URL not configured in production. Operating in DB cache fallback mode.');
+    return;
+  }
   try {
     await redis.connect();
   } catch (error) {

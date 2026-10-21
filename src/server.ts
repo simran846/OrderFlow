@@ -1,5 +1,6 @@
 import { createApp } from './app';
 import { disconnectDatabase } from './config/database';
+import { initializeDatabase } from './config/database.init';
 import { env } from './config/env';
 import { startQueueWorkers, stopQueueWorkers } from './queue';
 import { logger } from './utils/logger';
@@ -19,6 +20,14 @@ const startServer = () => {
 
     // Start background queue workers (BullMQ)
     startQueueWorkers();
+
+    // Asynchronously verify database connectivity, sync schema & seed catalog
+    initializeDatabase().catch((err) => {
+      logger.warn(
+        { err: err.message },
+        '⚠️ Database initialization deferred: App running with offline DB fallback'
+      );
+    });
   });
 
   // Graceful Shutdown handling

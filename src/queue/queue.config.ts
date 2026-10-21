@@ -10,12 +10,15 @@ const parseRedisConnection = (): ConnectionOptions => {
   if (env.REDIS_URL) {
     try {
       const u = new URL(env.REDIS_URL);
+      const isTls = u.protocol === 'rediss:';
       return {
         host: u.hostname,
         port: u.port ? parseInt(u.port, 10) : 6379,
-        password: u.password || undefined,
-        username: u.username && u.username !== 'default' ? u.username : undefined,
+        password: u.password ? decodeURIComponent(u.password) : undefined,
+        username:
+          u.username && u.username !== 'default' ? decodeURIComponent(u.username) : undefined,
         maxRetriesPerRequest: null,
+        tls: isTls ? { rejectUnauthorized: false } : undefined,
       };
     } catch {
       // Fallback to standard host/port
