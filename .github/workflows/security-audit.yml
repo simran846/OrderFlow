@@ -18,5 +18,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: 🛡️ Audit Dependencies
-        run: npm audit --audit-level=high || true
+      - name: 🛡️ Audit Backend Dependencies
+        run: npm --prefix backend audit --audit-level=high || true
+
+      - name: 🛡️ Audit Frontend Dependencies
+        run: npm --prefix frontend audit --audit-level=high || true

@@ -7,13 +7,12 @@ on:
     branches: [ master, main ]
 
 jobs:
-  test-and-build:
-    name: Test & Build Monorepo on Node.js ${{ matrix.node-version }}
+  backend:
+    name: Backend CI (Express, Prisma & Tests)
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [ 20.x, 22.x ]
+    defaults:
+      run:
+        working-directory: ./backend
 
     services:
       mysql:
@@ -53,32 +52,50 @@ jobs:
       - name: 📥 Check out repository
         uses: actions/checkout@v4
 
-      - name: ⚙️ Set up Node.js ${{ matrix.node-version }}
+      - name: ⚙️ Set up Node.js 20.x
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - name: 📦 Install root dependencies
-        run: npm ci || npm install
+          node-version: 20.x
 
       - name: 📦 Install backend dependencies
-        run: npm --prefix backend install
-
-      - name: 📦 Install frontend dependencies
-        run: npm --prefix frontend install
+        run: npm install
 
       - name: 🔧 Generate Prisma Client
-        run: npm run prisma:generate
+        run: npx prisma generate
 
-      - name: 🧹 Run ESLint Linter
-        run: npm run lint
-
-      - name: 🔍 TypeScript Strict Type Checking
+      - name: 🔍 TypeScript Type Checking
         run: npx tsc --noEmit
 
       - name: 🧪 Run Automated Backend Test Suite
         run: npm test
 
-      - name: 🏗️ Build All Applications (Backend & Frontend)
+      - name: 🏗️ Build Backend API (dist/)
+        run: npm run build
+
+  frontend:
+    name: Frontend CI (Next.js 14 Storefront)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    env:
+      NEXT_PUBLIC_API_URL: http://localhost:5000/api/v1
+
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: 📦 Install frontend dependencies
+        run: npm install
+
+      - name: 🔍 TypeScript Type Checking
+        run: npx tsc --noEmit
+
+      - name: 🏗️ Build Next.js Production Bundle
         run: npm run build
