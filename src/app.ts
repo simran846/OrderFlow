@@ -61,9 +61,23 @@ export const createApp = (): Application => {
   app.use(`${env.API_PREFIX}/payments`, paymentRoutes);
   app.use(`${env.API_PREFIX}/docs`, swaggerRoutes);
 
-  // Dedicated storefront route
-  app.get('/store', (_req: Request, res: Response) => {
-    res.sendFile(path.join(publicDir, 'index.html'));
+  // Dedicated storefront consumer routes (SPA routing support for direct navigation & reloads)
+  const storefrontRoutes = [
+    '/store',
+    '/product/:id',
+    '/cart',
+    '/checkout',
+    '/orders',
+    '/orders/:id',
+    '/login',
+    '/signup',
+    '/account',
+  ];
+
+  storefrontRoutes.forEach((route) => {
+    app.get(route, (_req: Request, res: Response) => {
+      res.sendFile(path.join(publicDir, 'index.html'));
+    });
   });
 
   // Root route: Serves storefront website for browser navigations, JSON metadata for API clients

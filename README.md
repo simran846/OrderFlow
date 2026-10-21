@@ -12,7 +12,20 @@
 ![Docker](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?logo=docker)
 ![Tests](https://img.shields.io/badge/Tests-58%20Passing-brightgreen?logo=jest)
 
-OrderFlow is a production-grade, modular monolith e-commerce backend built with **TypeScript**, **Node.js (v22 LTS)**, **Express**, **MySQL 8**, **Prisma ORM**, **Redis**, and **BullMQ**. It is designed to tackle critical distributed system challenges: **inventory race conditions, double-spend prevention, guaranteed idempotency, server-authoritative pricing, resilient caching, and cryptographic webhook settlement**.
+OrderFlow is a production-grade, modular monolith e-commerce platform built with **TypeScript**, **Node.js (v22 LTS)**, **Express**, **MySQL 8**, **Prisma ORM**, **Redis**, and **BullMQ**. It features an **Amazon / Flipkart inspired, high-performance customer storefront** backed by enterprise-grade distributed patterns: **zero-overselling inventory locks, guaranteed idempotency, server-authoritative pricing, resilient caching, and cryptographic webhook settlement**.
+
+---
+
+## 🛍️ Modern Consumer Storefront Experience
+
+OrderFlow includes a complete, responsive e-commerce web application inspired by **Amazon, Flipkart, and Swiggy**:
+
+* **Clean Visual Hierarchy**: Warm slate/white backdrop (`#f8fafc`), deep obsidian navy (`#0f172a`), royal blue primary accents (`#2563eb`), and warm amber rating stars (`#f59e0b`).
+* **High-Assurance Client Router**: Full client-side SPA routing (`/store`, `/product/:id`, `/cart`, `/checkout`, `/orders`, `/login`, `/signup`, `/account`) with direct deep-linking and browser back/forward history.
+* **Instant Guest Cart & Auto-Sync**: Browse and add items as a guest; upon login or registration, the client seamlessly reconciles guest items into the authenticated server-managed cart.
+* **Real Checkout with Idempotency**: Checkout requests automatically attach unique `Idempotency-Key` headers to guarantee zero double-charges or duplicate inventory decrements.
+* **Curated High-Resolution Product Showcase**: Rich photography, badges (`Best Seller`, `Deal of the Day`, `Top Rated`), real-time stock pills (`In Stock` / `Only X left`), and category pill navigation ribbons.
+* **Enterprise Fallback Resilience**: Storefront gracefully degrades to built-in curated catalogs if remote databases are temporarily offline during cold-starts.
 
 ---
 
@@ -362,6 +375,21 @@ npm run test:load
  Target Thresholds Met         : PASSED ✅
 ================================================================================
 ```
+
+---
+
+## 🌐 Storefront & Customer Navigation Routes
+
+| Route | View Description | Features |
+| :--- | :--- | :--- |
+| `/store` | **Catalog & Department Showcase** | Real-time search, category ribbon filter, price sorting, badges, inventory availability |
+| `/product/:id` | **Product Detail View** | High-res imagery, specs, quantity selector, add-to-cart, buy-now checkout |
+| `/cart` | **Shopping Cart** | Subtotal breakdown, free-shipping threshold bar, quantity adjustments, item removal |
+| `/checkout` | **Express Checkout** | Shipping address collection, card payment simulation, idempotency lock guarantee |
+| `/orders` | **Customer Orders History** | Order cards with status pills, order number lookup, item breakdowns |
+| `/login` | **Customer Sign In** | Email/password authentication, JWT storage, guest cart auto-synchronization |
+| `/signup` | **Customer Registration** | Account creation with form validation |
+| `/account` | **Customer Profile** | Authenticated user details, membership status, quick order links, secure sign out |
 
 ---
 
